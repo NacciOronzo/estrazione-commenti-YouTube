@@ -1,6 +1,9 @@
 import time
 import streamlit as st
 from playwright.sync_api import sync_playwright
+import os
+
+os.system("playwright install chromium")
 
 def get_youtube_comments(video_url, max_comments=100):
     comments = []
