@@ -9,7 +9,7 @@ def extract_video_id(url):
     return match.group(1) if match else None
 
 
-def get_youtube_comments(video_url, max_comments=100):
+def get_youtube_comments(video_url, max_comments=1000):
     video_id = extract_video_id(video_url)
     if not video_id:
         st.error("❌ URL non valido. Inserisci un link YouTube corretto.")
