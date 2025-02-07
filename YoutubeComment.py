@@ -32,7 +32,7 @@ comments = []
 if extract_button:
     if video_url:
         st.write("🚀 Recupero dei commenti...")
-        comments = get_youtube_comments(video_url, max_comments=100)
+        comments = get_youtube_comments(video_url, max_comments=1000)
         if comments:
             for i, comment in enumerate(comments, 1):
                 st.write(f"{i}. {comment}")
