@@ -1,11 +1,11 @@
 from youtube_comment_downloader import YoutubeCommentDownloader
 import streamlit as st
 import re
-import time
+import pandas as pd
 
 def extract_video_id(url):
-    """Estrae l'ID del video da un URL YouTube."""
-    match = re.search(r"(?:v=|youtu\.be/)([a-zA-Z0-9_-]+)", url)
+    """Estrae l'ID del video da un URL YouTube"""
+    match = re.search(r"v=([a-zA-Z0-9_-]+)", url)
     return match.group(1) if match else None
 
 def get_youtube_comments(video_url, max_comments=100):
@@ -13,46 +13,35 @@ def get_youtube_comments(video_url, max_comments=100):
     if not video_id:
         st.error("❌ URL non valido. Inserisci un link YouTube corretto.")
         return []
-    
-    try:
-        downloader = YoutubeCommentDownloader()
-        st.write("▶ Avvio del downloader per il video con ID:", video_id)
-        
-        # Accumula i commenti dal generatore
-        temp_comments = []
-        for comment in downloader.get_comments(video_id):
-            temp_comments.append(comment)
-        comments = temp_comments
-        
-        st.write("📩 Commenti recuperati:", len(comments))
-        # Restituisci solo i primi max_comments
-        return [comment['text'] for comment in comments][:max_comments]
-    except Exception as e:
-        st.error(f"Errore nel recupero dei commenti: {e}")
-        return []
+
+    downloader = YoutubeCommentDownloader()
+    comments = list(downloader.get_comments(video_id))[:max_comments]
+    return [comment['text'] for comment in comments]
 
 st.title("Estrattore Commenti YouTube")
 
 video_url = st.text_input("Inserisci l'URL del video YouTube")
 
-if st.button("Estrai Commenti"):
+col1, col2 = st.columns(2)
+with col1:
+    extract_button = st.button("Estrai Commenti")
+with col2:
+    download_button = st.button("Scarica Commenti")
+
+comments = []
+if extract_button:
     if video_url:
-        with st.spinner("🚀 Recupero dei commenti in corso..."):
-            comments = get_youtube_comments(video_url, max_comments=100)
+        st.write("🚀 Recupero dei commenti...")
+        comments = get_youtube_comments(video_url, max_comments=100)
         if comments:
-            st.write("✅ Estrazione completata!")
             for i, comment in enumerate(comments, 1):
                 st.write(f"{i}. {comment}")
-            
-            # Crea una stringa con tutti i commenti separati da newline
-            comments_text = "\n".join(comments)
-            st.download_button(
-                label="Scarica commenti",
-                data=comments_text,
-                file_name="commenti.txt",
-                mime="text/plain"
-            )
         else:
             st.write("❌ Nessun commento trovato.")
     else:
         st.error("Inserisci un URL valido!")
+
+if download_button and comments:
+    df = pd.DataFrame(comments, columns=["Commenti"])
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button(label="📥 Scarica CSV", data=csv, file_name="commenti_youtube.csv", mime="text/csv")
