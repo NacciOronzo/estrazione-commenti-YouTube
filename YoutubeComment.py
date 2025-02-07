@@ -17,8 +17,13 @@ def get_youtube_comments(video_url, max_comments=100):
     try:
         downloader = YoutubeCommentDownloader()
         st.write("▶ Avvio del downloader per il video con ID:", video_id)
-        # Rimuoviamo l'argomento 'max_count' dalla chiamata
-        comments = downloader.get_comments(video_id)
+        
+        # Invece di fare list() direttamente, iteriamo manualmente
+        temp_comments = []
+        for comment in downloader.get_comments(video_id):
+            temp_comments.append(comment)
+        comments = temp_comments
+        
         st.write("📩 Commenti recuperati:", len(comments))
         # Limitiamo il numero di commenti restituendo solo i primi max_comments
         return [comment['text'] for comment in comments][:max_comments]
@@ -32,8 +37,8 @@ video_url = st.text_input("Inserisci l'URL del video YouTube")
 
 if st.button("Estrai Commenti"):
     if video_url:
-        st.write("🚀 Recupero dei commenti...")
-        comments = get_youtube_comments(video_url, max_comments=100)
+        with st.spinner("🚀 Recupero dei commenti in corso..."):
+            comments = get_youtube_comments(video_url, max_comments=100)
         if comments:
             st.write("✅ Estrazione completata!")
             for i, comment in enumerate(comments, 1):
