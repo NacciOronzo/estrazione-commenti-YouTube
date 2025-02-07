@@ -4,8 +4,9 @@ import re
 import time
 
 def extract_video_id(url):
-    """Estrae l'ID del video da un URL YouTube"""
-    match = re.search(r"v=([a-zA-Z0-9_-]+)", url)
+    """Estrae l'ID del video da un URL YouTube."""
+    # Supporta URL del tipo https://www.youtube.com/watch?v=xxxx oppure formati alternativi
+    match = re.search(r"(?:v=|youtu\.be/)([a-zA-Z0-9_-]+)", url)
     return match.group(1) if match else None
 
 def get_youtube_comments(video_url, max_comments=100):
@@ -14,12 +15,16 @@ def get_youtube_comments(video_url, max_comments=100):
         st.error("❌ URL non valido. Inserisci un link YouTube corretto.")
         return []
     
-    st.write("▶ Avvio del downloader...")
-    downloader = YoutubeCommentDownloader()
-    st.write("🔍 Recupero dei commenti...")
-    comments = downloader.get_comments(video_id, max_count=max_comments)
-    st.write("📩 Commenti recuperati: ", len(comments))
-    return [comment['text'] for comment in comments]
+    try:
+        downloader = YoutubeCommentDownloader()
+        st.write("▶ Avvio del downloader per il video con ID:", video_id)
+        # Chiamata alla libreria con l'ID estratto
+        comments = downloader.get_comments(video_id, max_count=max_comments)
+        st.write("📩 Commenti recuperati:", len(comments))
+        return [comment['text'] for comment in comments]
+    except Exception as e:
+        st.error(f"Errore nel recupero dei commenti: {e}")
+        return []
 
 st.title("Estrattore Commenti YouTube")
 
