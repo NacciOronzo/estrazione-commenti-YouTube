@@ -43,5 +43,6 @@ if extract_button:
 
 if comments:
     with col2:
-        txt = "\n".join(comments)
+        # Genera una stringa con i commenti numerati
+        txt = "\n".join([f"{i}. {comment}" for i, comment in enumerate(comments, 1)])
         st.download_button(label="📥 Scarica TXT", data=txt, file_name="commenti_youtube.txt", mime="text/plain")
